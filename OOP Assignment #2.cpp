@@ -45,5 +45,57 @@ class memory {
         size_t size() const {
             return cells.size();
         }
-    };  
+    };
+    
+    class Register{
+private:
+int registers[16];
+public:
+void reset() {
+        for(int i = 0; i < 16; i++) {
+            registers[i] = 0;
+        }
+    }
+Register(){
+    reset();
+};
+bool isValidIndex(int index) {
+   return (index >= 0 && index < 16);
+    }
+void setRegister(int index,int value){
+     if(isValidIndex(index)){
+registers[index]=value;
+}
+    else{cout << "invalid index"<<endl;}
+}
+int getRegister(int index){
+     if(isValidIndex(index)){
+    return registers[index]; 
+}    else{cout << "invalid index"<<endl;}
+}
+};
+
+class cpu{
+    private :
+    int pc;
+    int ir;
+    public :
+    cpu(){
+        pc=0;
+        ir=0;
+    }
+    void setpc(int value){
+        pc = value;
+    }
+    int getpc(){
+        return pc;
+    }
+    void setir(int value){
+        ir=value;
+    }
+    int getir(){
+        return ir;
+    }
+};
+  
 

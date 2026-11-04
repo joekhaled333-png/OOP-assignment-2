@@ -97,5 +97,55 @@ class cpu{
         return ir;
     }
 };
-  
+class ALU{
+public:
+    int add(int opr1,int opr2){
+        return opr1+ opr2;
+    }
+    int sub(int opr1,int opr2){
+        return opr1- opr2;
+    }
+    int mult(int opr1,int opr2){
+        return opr1* opr2;
+    }
+    int divide(int opr1,int opr2){
+        if(opr2==0){
+            return 0;
+        }
+        return opr1/ opr2;
+    }
+    int OR (int opr1,int opr2){
+        return opr1|| opr2;
+    }
+    int AND (int opr1,int opr2){
+        return opr1&&opr2;
+    }
+};
+class decoder{
+public:
+    struct decodedinstruction {
+        int opcode;
+        int reg ;
+        int opr1;
+        int opr2;
+    };
+    
+    decodedinstruction decode (const string&instructionHex){
+        decodedinstruction decoded ;
+        if (instructionHex .length()!=4){
+            return{0,0,0,0};
+        }
+        decoded.opcode=hexchar_to_int(instructionHex[0]);
+        decoded.reg=hexchar_to_int(instructionHex[1]);
+        decoded.opr1=hexchar_to_int(instructionHex[2]);
+        decoded.opr2=hexchar_to_int(instructionHex[3]);
+            return decoded;
+    }
+    int hexchar_to_int(char c){
+        if(c>='0'&&c<=9)return (c-'0');
+        if(c>='A'&&c<='F')return (c-'A'+10);
+        if(c>='a'&&c<='f')return (c-'a'+10);
+        return 0;
+    }    
+};  
 

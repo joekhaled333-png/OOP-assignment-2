@@ -78,23 +78,23 @@ uint8_t getRegister(uint8_t index)const{
 
 class cpu{
     private :
-    int pc;
-    int ir;
+    uint8_t pc;
+    uint16_t ir;
     public :
     cpu(){
         pc=0;
         ir=0;
     }
-    void setpc(int value){
+    void setpc(uint8_t value){
         pc = value;
     }
-    int getpc(){
+    uint8_t getpc(){
         return pc;
     }
-    void setir(int value){
+    void setir(uint16_t value){
         ir=value;
     }
-    int getir(){
+    uint16_t getir(){
         return ir;
     }
 };

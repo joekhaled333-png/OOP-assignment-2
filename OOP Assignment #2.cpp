@@ -47,33 +47,34 @@ class memory {
         }
     };
     
-    class Register{
+class Register{
 private:
-int registers[16];
+vector <uint8_t> registers;
 public:
 void reset() {
-        for(int i = 0; i < 16; i++) {
+        for(size_t i = 0; i < 16; i++) {
             registers[i] = 0;
         }
     }
-Register(){
+Register(size_t size =16){registers.resize(16,0);
     reset();
 };
-bool isValidIndex(int index) {
+bool isValidIndex(uint8_t index)const {
    return (index >= 0 && index < 16);
     }
-void setRegister(int index,int value){
+void setRegister(uint8_t index,uint8_t value){
      if(isValidIndex(index)){
 registers[index]=value;
 }
     else{cout << "invalid index"<<endl;}
 }
-int getRegister(int index){
+uint8_t getRegister(uint8_t index)const{
      if(isValidIndex(index)){
     return registers[index]; 
 }    else{cout << "invalid index"<<endl;}
 }
 };
+
 
 class cpu{
     private :

@@ -76,26 +76,98 @@ uint8_t getRegister(uint8_t index)const{
 };
 
 
-class cpu{
-    private :
-    uint8_t pc;
-    uint16_t ir;
-    public :
-    cpu(){
-        pc=0;
-        ir=0;
+class cpu {
+private :
+    int pc;
+    int ir;
+public :
+    cpu() {
+        pc = 0;
+        ir = 0;
     }
-    void setpc(uint8_t value){
+    void setpc(int value){
         pc = value;
     }
-    uint8_t getpc(){
+    int getpc(){
         return pc;
     }
-    void setir(uint16_t value){
-        ir=value;
+    void setir(int value){
+        ir = value;
     }
-    uint16_t getir(){
+    int getir(){
         return ir;
+    }
+    void run(memory& myMem, Register& myRegs, ALU& myAlu, decoder& myDec, screen& myScreen) {
+        setpc(0);
+        bool isRunning = true;
+        while (isRunning) {
+            int currentPc = getpc();
+            if (currentPc >= myMem.size() - 1) {
+                break;
+            }
+            uint8_t highByte = myMem.getData(currentPc);
+            uint8_t lowByte = myMem.getData(currentPc + 1);
+
+            char hexBuffer[5];
+            snprintf(hexBuffer, sizeof(hexBuffer), "%02X%02X", highByte, lowByte);
+            string instructionHex(hexBuffer);
+            setir(stoul(instructionHex, nullptr, 16));
+            decoder::decodedinstruction decoded = myDec.decode(instructionHex);
+            if (decoded.opcode == 12 && decoded.reg == 0 && decoded.opr1 == 0 && decoded.opr2 == 0) {
+                cout << " Program Halted Successfully (C000)" << endl;
+                isRunning = false;
+                break;
+            }
+            switch (decoded.opcode) {
+                case 1: {
+                    int address = (decoded.opr1 << 4) | decoded.opr2;
+                    int value = myMem.getData(address);
+                    myRegs.setRegister(decoded.reg, value);
+                    break;
+                }
+                case 2: {
+                    int value = (decoded.opr1 << 4) | decoded.opr2;
+                    myRegs.setRegister(decoded.reg, value);
+                    break;
+                }
+                case 3: {
+                    int address = (decoded.opr1 << 4) | decoded.opr2;
+                    int value = myRegs.getRegister(decoded.reg);
+                    myMem.setData(address, value, myScreen);
+                    break;
+                }
+                case 4: {
+                    int value = myRegs.getRegister(decoded.opr2);
+                    myRegs.setRegister(decoded.reg, value);
+                    break;
+                }
+                case 5: {
+                    int val1 = myRegs.getRegister(decoded.opr1);
+                    int val2 = myRegs.getRegister(decoded.opr2);
+                    int res = myAlu.add(val1, val2);
+                    myRegs.setRegister(decoded.reg, res);
+                    break;
+                }
+                case 7: {
+                    int val1 = myRegs.getRegister(decoded.opr1);
+                    int val2 = myRegs.getRegister(decoded.opr2);
+                    int res = myAlu.OR(val1, val2);
+                    myRegs.setRegister(decoded.reg, res);
+                    break;
+                }
+                case 8: {
+                    int val1 = myRegs.getRegister(decoded.opr1);
+                    int val2 = myRegs.getRegister(decoded.opr2);
+                    int res = myAlu.AND(val1, val2);
+                    myRegs.setRegister(decoded.reg, res);
+                    break;
+                }
+                default:
+                    cout << "Unknown Opcode: " << decoded.opcode << endl;
+                    break;
+            }
+            setpc(currentPc + 2);
+        }
     }
 };
 class ALU{

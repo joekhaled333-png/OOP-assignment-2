@@ -70,6 +70,13 @@ bool cpu::execute(decoder::decodedinstruction decoded, memory& myMem, Register& 
             myRegs.setRegister(decoded.reg, res);
             break;
         }
+        case 6: {
+            int val1 = myRegs.getRegister(decoded.opr1);
+            int val2 = myRegs.getRegister(decoded.opr2);
+            int res = myAlu.floatAdd(val1, val2);
+            myRegs.setRegister(decoded.reg, res);
+            break;
+}
         case 7: {
             int val1 = myRegs.getRegister(decoded.opr1);
             int val2 = myRegs.getRegister(decoded.opr2);
@@ -82,6 +89,33 @@ bool cpu::execute(decoder::decodedinstruction decoded, memory& myMem, Register& 
             int val2 = myRegs.getRegister(decoded.opr2);
             int res = myAlu.AND(val1, val2);
             myRegs.setRegister(decoded.reg, res);
+            break;
+        }
+        case 9: {
+            int val1 = myRegs.getRegister(decoded.opr1);
+            int val2 = myRegs.getRegister(decoded.opr2);
+            int res = myAlu.XOR(val1, val2);
+            myRegs.setRegister(decoded.reg, res);
+            break;
+        }
+        case 10: {
+            cout << "Executing Opcode: " << decoded.opcode << " | Reg: " << decoded.reg << " | Opr1: " << decoded.opr1 << " | Opr2: " << decoded.opr2 << endl;
+            int r = decoded.reg;
+            int x = decoded.opr2;
+            int val = myRegs.getRegister(r);
+            for(int i = 0; i < x; ++i) {
+                int lsb = val & 1;
+                val = (val >> 1) | (lsb << 7);
+            }
+            myRegs.setRegister(r, val & 0xFF);
+            break;
+        }
+        case 11: {
+            int r = decoded.reg;
+            int targetAddress = (decoded.opr1 << 4) | decoded.opr2;
+            if (myRegs.getRegister(r) == myRegs.getRegister(0)) {
+                setpc(targetAddress - 2); 
+            }
             break;
         }
         default:

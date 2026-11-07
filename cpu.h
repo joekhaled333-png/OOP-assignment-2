@@ -7,7 +7,7 @@
 #include "memory.h"
 #include "Register.h"
 #include "ALU.h"
-#include "decoder.h"
+#include "Decode.h"
 #include "screen.h"
 
 using namespace std;

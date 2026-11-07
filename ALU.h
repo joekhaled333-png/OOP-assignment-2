@@ -9,6 +9,8 @@ public:
     int divide(int val1, int val2);
     int OR(int val1, int val2);
     int AND(int val1, int val2);
+    int XOR(int val1, int val2);
+    int floatAdd(int val1, int val2);
 };
 
 #endif

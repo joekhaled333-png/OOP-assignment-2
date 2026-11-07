@@ -1,5 +1,5 @@
-#ifndef DECODER_H
-#define DECODER_H
+#ifndef DECODE_H
+#define DECODE_H
 
 #include <string>
 

@@ -1,224 +1,95 @@
-#include<iostream>
-#include<string>
-#include<vector>
-#include<algorithm>
-#include<cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include "Memory.h"
+#include "Register.h"
+#include "ALU.h"
+#include "Decode.h"
+#include "Screen.h"
+#include "cpu.h"
+
 using namespace std;
 
+void runInteractiveVoleMachine() {
+    memory myMem(256);
+    Register myRegs(16);
+    ALU myAlu;
+    decoder myDec;
+    screen myScreen;
+    cpu myCpu;
 
-class screen {
-    private:
-        string FF;
-    public:
-        void write(uint8_t value ) {
-            char ch = static_cast<char>(value);
-            FF += ch;
-            cout << "[screen output]: " << ch << endl;
-        }
-        string getoutput() const {
-            return FF;
-        }
-        void clear() {
-            FF.clear();
-        }
-};
-class memory {
-    private:
-        vector<uint8_t> cells;
-    public:
-        memory(size_t size = 256) : cells(size, 0) {}
+    cout << "=================================================" << endl;
+    cout << "       VOLE MACHINE SIMULATION        " << endl;
+    cout << "=================================================" << endl;
+    cout << "Enter instructions in HEX (e.g., 215B 4012 A202 ...)." << endl;
+    cout << "Type 'RUN' on a new line when you are done to execute." << endl;
+    cout << "Type 'EXIT' to close the simulator." << endl;
+    cout << "-------------------------------------------------" << endl;
 
-        uint8_t getData(uint8_t address) const {
-            return cells[address];
-        }
-        void setData(uint8_t address, uint8_t value,screen& screen) {
-            if (address == 0xFF){
-                screen.write(value);
-            }
-                cells[address] = value;
-            
-        }
-        void clear() {
-            fill(cells.begin(), cells.end(), 0);
-        }
+    while (true) {
 
-        size_t size() const {
-            return cells.size();
-        }
-    };
-    
-class Register{
-private:
-vector <uint8_t> registers;
-public:
-void reset() {
-        for(size_t i = 0; i < 16; i++) {
-            registers[i] = 0;
-        }
-    }
-Register(size_t size =16){registers.resize(16,0);
-    reset();
-};
-bool isValidIndex(uint8_t index)const {
-   return (index >= 0 && index < 16);
-    }
-void setRegister(uint8_t index,uint8_t value){
-     if(isValidIndex(index)){
-registers[index]=value;
-}
-    else{cout << "invalid index"<<endl;}
-}
-uint8_t getRegister(uint8_t index)const{
-     if(isValidIndex(index)){
-    return registers[index]; 
-}    else{cout << "invalid index"<<endl;}
-}
-};
+        myMem.clear();
+        myRegs.reset();
+        myScreen.clear();
+
+        cout << "\n[New Test Case] Enter your program code:" << endl;
+        
+        vector<string> instructions;
+        string input;
+
+        while (true) {
+            cout << "> ";
+            cin >> input;
 
 
-class cpu {
-private :
-    int pc;
-    int ir;
-public :
-    cpu() {
-        pc = 0;
-        ir = 0;
-    }
-    void setpc(int value){
-        pc = value;
-    }
-    int getpc(){
-        return pc;
-    }
-    void setir(int value){
-        ir = value;
-    }
-    int getir(){
-        return ir;
-    }
-    void run(memory& myMem, Register& myRegs, ALU& myAlu, decoder& myDec, screen& myScreen) {
-        setpc(0);
-        bool isRunning = true;
-        while (isRunning) {
-            int currentPc = getpc();
-            if (currentPc >= myMem.size() - 1) {
+            for (auto &c : input) c = toupper(c);
+
+            if (input == "RUN") {
                 break;
             }
-            uint8_t highByte = myMem.getData(currentPc);
-            uint8_t lowByte = myMem.getData(currentPc + 1);
-
-            char hexBuffer[5];
-            snprintf(hexBuffer, sizeof(hexBuffer), "%02X%02X", highByte, lowByte);
-            string instructionHex(hexBuffer);
-            setir(stoul(instructionHex, nullptr, 16));
-            decoder::decodedinstruction decoded = myDec.decode(instructionHex);
-            if (decoded.opcode == 12 && decoded.reg == 0 && decoded.opr1 == 0 && decoded.opr2 == 0) {
-                cout << " Program Halted Successfully (C000)" << endl;
-                isRunning = false;
-                break;
+            if (input == "EXIT") {
+                cout << "Exiting simulator" << endl;
+                return;
             }
-            switch (decoded.opcode) {
-                case 1: {
-                    int address = (decoded.opr1 << 4) | decoded.opr2;
-                    int value = myMem.getData(address);
-                    myRegs.setRegister(decoded.reg, value);
-                    break;
-                }
-                case 2: {
-                    int value = (decoded.opr1 << 4) | decoded.opr2;
-                    myRegs.setRegister(decoded.reg, value);
-                    break;
-                }
-                case 3: {
-                    int address = (decoded.opr1 << 4) | decoded.opr2;
-                    int value = myRegs.getRegister(decoded.reg);
-                    myMem.setData(address, value, myScreen);
-                    break;
-                }
-                case 4: {
-                    int value = myRegs.getRegister(decoded.opr2);
-                    myRegs.setRegister(decoded.reg, value);
-                    break;
-                }
-                case 5: {
-                    int val1 = myRegs.getRegister(decoded.opr1);
-                    int val2 = myRegs.getRegister(decoded.opr2);
-                    int res = myAlu.add(val1, val2);
-                    myRegs.setRegister(decoded.reg, res);
-                    break;
-                }
-                case 7: {
-                    int val1 = myRegs.getRegister(decoded.opr1);
-                    int val2 = myRegs.getRegister(decoded.opr2);
-                    int res = myAlu.OR(val1, val2);
-                    myRegs.setRegister(decoded.reg, res);
-                    break;
-                }
-                case 8: {
-                    int val1 = myRegs.getRegister(decoded.opr1);
-                    int val2 = myRegs.getRegister(decoded.opr2);
-                    int res = myAlu.AND(val1, val2);
-                    myRegs.setRegister(decoded.reg, res);
-                    break;
-                }
-                default:
-                    cout << "Unknown Opcode: " << decoded.opcode << endl;
-                    break;
-            }
-            setpc(currentPc + 2);
-        }
-    }
-};
-class ALU{
-public:
-    int add(int opr1,int opr2){
-        return opr1+ opr2;
-    }
-    int sub(int opr1,int opr2){
-        return opr1- opr2;
-    }
-    int mult(int opr1,int opr2){
-        return opr1* opr2;
-    }
-    int divide(int opr1,int opr2){
-        if(opr2==0){
-            return 0;
-        }
-        return opr1/ opr2;
-    }
-    int OR (int opr1,int opr2){
-        return opr1|| opr2;
-    }
-    int AND (int opr1,int opr2){
-        return opr1&&opr2;
-    }
-};
-class decoder{
-public:
-    struct decodedinstruction {
-        int opcode;
-        int reg ;
-        int opr1;
-        int opr2;
-    };
-    
-    decodedinstruction decode (const string&instructionHex){
-        decodedinstruction decoded ;
-        if (instructionHex .length()!=4){
-            return{0,0,0,0};
-        }
-        decoded.opcode=hexchar_to_int(instructionHex[0]);
-        decoded.reg=hexchar_to_int(instructionHex[1]);
-        decoded.opr1=hexchar_to_int(instructionHex[2]);
-        decoded.opr2=hexchar_to_int(instructionHex[3]);
-            return decoded;
-    }
-    int hexchar_to_int(char c){
-        if(c>='0'&&c<='9')return (c-'0');
-        if(c>='A'&&c<='F')return (c-'A'+10);
-        if(c>='a'&&c<='f')return (c-'a'+10);
-        return 0;
-    }    
-};  
 
+
+            if (input.length() == 4) {
+                instructions.push_back(input);
+            } else {
+                cout << "  Invalid instruction length ('" << input << "'). Instructions must be 4 HEX characters!" << endl;
+            }
+        }
+
+        if (instructions.empty()) {
+            cout << "No instructions entered!" << endl;
+            continue;
+        }
+
+
+        uint8_t currentAddress = 0x00;
+        for (const string& inst : instructions) {
+            string highByteStr = inst.substr(0, 2);
+            string lowByteStr  = inst.substr(2, 2);
+
+            uint8_t highByte = static_cast<uint8_t>(stoul(highByteStr, nullptr, 16));
+            uint8_t lowByte  = static_cast<uint8_t>(stoul(lowByteStr, nullptr, 16));
+
+            myMem.setData(currentAddress++, highByte, myScreen);
+            myMem.setData(currentAddress++, lowByte, myScreen);
+        }
+
+        cout << "\n--- Executing Program (" << instructions.size() << " instructions loaded) ---" << endl;
+        
+
+        myCpu.run(myMem, myRegs, myAlu, myDec, myScreen);
+
+        cout << "--- Execution Complete ---" << endl;
+        cout << "=================================================" << endl;
+    }
+}
+
+int main() {
+    runInteractiveVoleMachine();
+    return 0;
+}

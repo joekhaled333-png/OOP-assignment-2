@@ -1,4 +1,4 @@
-#include "Decoder.h"
+#include "Decode.h"
 
 decoder::decodedinstruction decoder::decode(const std::string& instructionHex) {
     decodedinstruction decoded;

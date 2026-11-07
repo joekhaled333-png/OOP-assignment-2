@@ -1,21 +1,20 @@
-#ifndef DECODER_H
-#define DECODER_H
+#include "Decoder.h"
 
-#include <string>
+decoder::decodedinstruction decoder::decode(const std::string& instructionHex) {
+    decodedinstruction decoded;
+    if (instructionHex.length() != 4) {
+        return {0, 0, 0, 0};
+    }
+    decoded.opcode = hexchar_to_int(instructionHex[0]);
+    decoded.reg    = hexchar_to_int(instructionHex[1]);
+    decoded.opr1   = hexchar_to_int(instructionHex[2]);
+    decoded.opr2   = hexchar_to_int(instructionHex[3]);
+    return decoded;
+}
 
-class decoder {
-public:
-    struct decodedinstruction {
-        int opcode;
-        int reg;
-        int opr1;
-        int opr2;
-    };
-
-    decodedinstruction decode(const std::string& instructionHex);
-
-private:
-    int hexchar_to_int(char c);
-};
-
-#endif
+int decoder::hexchar_to_int(char c) {
+    if (c >= '0' && c <= '9') return (c - '0');
+    if (c >= 'A' && c <= 'F') return (c - 'A' + 10);
+    if (c >= 'a' && c <= 'f') return (c - 'a' + 10);
+    return 0;
+}
